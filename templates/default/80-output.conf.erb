@@ -5,5 +5,5 @@ output {
   <% if node['logstash']['debug_stdout'] -%>
   <%= logstash.plugin_pp(data[:stdout]) %>
   <% end -%>
-  <%= logstash.plugin_pp(data[:elasticsearch]) %>
+  <%= logstash.plugin_pp(data[:output]) %>
 }

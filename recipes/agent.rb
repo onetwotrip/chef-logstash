@@ -11,5 +11,5 @@ include_recipe 'logstash::default'
 include_recipe 'logstash::service'
 
 # the difference of "agent" is only that that it has no default input and output
-node.default['logstash']['outputs']['default'].delete(:elasticsearch)
-node.default['logstash']['inputs']['default'].delete(:tcp)
+node.default['logstash']['inputs']['default'].delete(:input)
+node.default['logstash']['outputs']['default'].delete(:output)

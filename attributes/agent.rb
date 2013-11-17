@@ -13,4 +13,4 @@ default['logstash']['agent']['ipv4_only'] = false
 default['logstash']['agent']['verbosity'] = nil # might be: v or vv
 
 default['logstash']['agent']['server_role'] = 'logstash_server'
-default['logstash']['agent']['server_ipaddress'] = ''
+default['logstash']['agent']['server_ipaddress'] = nil

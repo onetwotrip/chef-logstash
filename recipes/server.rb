@@ -29,8 +29,8 @@ end
 es_server_ip and node.default['logstash']['elasticsearch_ip'] = es_server_ip
 graphite_server_ip and node.default['logstash']['graphite_ip'] = graphite_server_ip
 
-# Default elasticsearch output plugin configuration
-elastic = node.default['logstash']['outputs']['default']['elasticsearch']
+# Default output of logstash is configured to be the elasticsearch
+elastic = node.default['logstash']['outputs']['default'][:output]
 if node['logstash']['elasticsearch_ip']
   elastic[:host] = node['logstash']['elasticsearch_ip']
   elastic[:cluster] = node['logstash']['elasticsearch_cluster']
@@ -38,7 +38,7 @@ if node['logstash']['elasticsearch_ip']
 elsif node['logstash']['agent']['enable_embedded_es']
   elastic[:embedded] = true
 else
-  node.default['logstash']['outputs']['default'].delete('elasticsearch')
+  node.default['logstash']['outputs']['default'].delete(:output)
   Chef::Log.error("Logstash elasticsearch output configuration failed.")
   Chef::Log.error("Specify elasticsearch_ip or set enable_embedded_es.")
 end

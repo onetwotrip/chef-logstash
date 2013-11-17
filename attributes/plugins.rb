@@ -1,5 +1,5 @@
 
-default['logstash']['inputs']['default'][:tcp] = {
+default['logstash']['inputs']['default'][:input] = {
   _type: 'tcp',
   codec: 'json',
   port: 5959
@@ -21,11 +21,9 @@ default['logstash']['filters'][:syslog] = {
   }
 }
 
-default['logstash']['outputs']['default'] = {
-  elasticsearch: { _type: 'elasticsearch' },
-  stdout: {
-    _type: 'stdout',
-    debug: true,
-    codec: 'plain'
-  }
+default['logstash']['outputs']['default'][:output] = {_type: 'elasticsearch'}
+default['logstash']['outputs']['default'][:stdout] = {
+  _type: 'stdout',
+  debug: true,
+  codec: 'plain'
 }
