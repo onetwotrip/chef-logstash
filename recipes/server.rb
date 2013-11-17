@@ -17,10 +17,14 @@ include_recipe 'logstash::service'
 es_server_ip = node['logstash']['elasticsearch_ip']
 graphite_server_ip = node['logstash']['graphite_ip']
 if not Chef::Config[:solo]
-  es_node = search(:node, node['logstash']['elasticsearch_query']).first || {}
-  graphite_node = search(:node, node['logstash']['graphite_query']).first || {}
-  es_server_ip ||= es_node['ipaddress']
-  graphite_server_ip ||= graphite_node['ipaddress']
+  es_server_ip ||= begin
+    es_node = search(:node, node['logstash']['elasticsearch_query']).first || {}
+    es_node['ipaddress']
+  end
+  graphite_server_ip ||= begin
+    graphite_node = search(:node, node['logstash']['graphite_query']).first || {}
+    graphite_node['ipaddress']
+  end
 end
 es_server_ip and node.default['logstash']['elasticsearch_ip'] = es_server_ip
 graphite_server_ip and node.default['logstash']['graphite_ip'] = graphite_server_ip
