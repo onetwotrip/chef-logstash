@@ -8,13 +8,13 @@
 
 
 PIDDIR="<%= node['logstash']['pid_dir'] %>"
-export PIDFILE="$PIDDIR/<%= @name %>.pid"
-export LS_HOME="<%= @home %>"
-export LS_CONFIG="<%= @config_file %>"
+export PIDFILE="$PIDDIR/logstash.pid"
+export LS_HOME="<%= node['logstash']['basedir'] %>"
+export LS_CONFIG="<%= node['logstash']['config_dir'] %>"
 LS_USER="<%= node['logstash']['user'] %>"
-LS_LOG="<%= @log_file %>"
-LOGDIR="<%= ::File.dirname @log_file %>"
-export JAVA_OPTS="-server -Xms<%= @min_heap %> -Xmx<%= @max_heap %> -Djava.io.tmpdir=$LS_HOME/tmp/"
+LS_LOG="<%= node['logstash']['log_file'] %>"
+LOGDIR="<%= ::File.dirname(node['logstash']['log_file']) %>"
+export JAVA_OPTS="-server -Xms<%= node['logstash']['agent']['xms'] %> -Xmx<%= node['logstash']['agent']['xmx'] %> -Djava.io.tmpdir=$LS_HOME/tmp/"
 BIN_SCRIPT="/usr/bin/env java $JAVA_OPTS -jar $LS_HOME/lib/logstash.jar agent -f $LS_CONFIG > $LS_LOG 2>&1 &  echo \$! > $PIDFILE"
 
 if [ -f /etc/init.d/functions ] ; then

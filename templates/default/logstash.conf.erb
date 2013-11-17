@@ -1,0 +1,34 @@
+description "Logstash"
+author "Chef"
+
+start on (filesystem and net-device-up)
+stop on runlevel [!2345]
+
+respawn
+respawn limit 5 30
+limit nofile 65550 65550
+
+chdir <%= node['logstash']['basedir'] %>
+
+script
+  ##! LOGSTASH_HOME and HOME are needed for sincedb to work
+  export LOGSTASH_HOME="<%= node['logstash']['basedir'] %>"
+  export GC_OPTS="<%= node['logstash']['agent']['gc_opts'] %>"
+  export JAVA_OPTS="-server -Xms<%= node['logstash']['agent']['xms'] %> -Xmx<%= node['logstash']['agent']['xmx'] %> -Djava.io.tmpdir=$LOGSTASH_HOME/tmp/ <%= node['logstash']['agent']['java_opts'] %> <%= '-Djava.net.preferIPv4Stack=true' if node['logstash']['agent']['ipv4_only'] %>"
+  export LOGSTASH_OPTS="agent -f <%= node['logstash']['config_dir'] %> -l <%= node['logstash']['log_file'] %>"
+  <% if not node['logstash']['plugin_paths'].empty? -%>
+  export LOGSTASH_OPTS="$LOGSTASH_OPTS --pluginpath <%= node['logstash']['plugin_paths'].join(':') %>"
+  <% end -%>
+  <% if node['logstash']['agent']['verbosity'] -%>
+  export LOGSTASH_OPTS="$LOGSTASH_OPTS -<%= node['logstash']['agent']['verbosity'] %>"
+  <% end -%>
+  export OPTS="$JAVA_OPTS $GC_OPTS -jar $LOGSTASH_HOME/lib/logstash.jar $LOGSTASH_OPTS"
+
+  <% if node['logstash']['supervisor_gid'] -%>
+  HOME=$LOGSTASH_HOME exec start-stop-daemon --start -c <%= node['logstash']['user'] %>:<%= node['logstash']['supervisor_gid'] %> --exec /usr/bin/java -- $OPTS
+  <% else -%>
+  HOME=$LOGSTASH_HOME exec start-stop-daemon --start -c <%= node['logstash']['user'] %> --exec /usr/bin/java -- $OPTS
+  <% end -%>
+end script
+
+emits logstash-running

@@ -44,12 +44,12 @@ Attributes
 * `node['logstash']['graphite_role']` - the Chef role to search for
   discovering your preexisting Graphite server
 * `node['logstash']['graphite_query']` - the search query used for
-  discovering your preexisting Graphite server. Defaults to 
+  discovering your preexisting Graphite server. Defaults to
   node['logstash']['graphite_role'] in the current node environment
 * `node['logstash']['elasticsearch_role']` - the Chef role to search
   for discovering your preexisting ElasticSearch cluster.
 * `node['logstash']['elasticsearch_query']` - the search query used for
-  discovering your preexisting ElasticSearch cluster. Defaults to 
+  discovering your preexisting ElasticSearch cluster. Defaults to
   node['logstash']['elasticsearch_role'] in the current node environment
 * `node['logstash']['elasticsearch_cluster']` - the cluster name
   assigned to your preexisting ElasticSearch cluster. Only applies to
@@ -332,7 +332,7 @@ The current templates for the agent and server are written so that you
 can provide ruby hashes in your roles that map to inputs, filters, and
 outputs. Here is a role for logstash_server.
 
-There are two formats for the hashes for filters and outputs that you should be aware of ...   
+There are two formats for the hashes for filters and outputs that you should be aware of ...
 
 ### Legacy
 
@@ -349,7 +349,7 @@ filters: [
   },
   date: {
   type: "syslog"
-    match: [ 
+    match: [
       "timestamp",
       "MMM  d HH:mm:ss",
       "MMM dd HH:mm:ss",
@@ -367,9 +367,9 @@ Note:  the condition applies to all plugins in the block hash in the same object
 
 ```
 filters: [
-  { 
+  {
     condition: 'if [type] == "syslog"',
-    block: {    
+    block: {
       grok: {
         match: [
           "message",
@@ -377,7 +377,7 @@ filters: [
         ]
       },
       date: {
-        match: [ 
+        match: [
           "timestamp",
           "MMM  d HH:mm:ss",
           "MMM dd HH:mm:ss",
@@ -581,11 +581,13 @@ Logstash will listen for syslog messages on tcp/5140
 
 ## License and Author
 
+- Author:    Denis Barishev (<dennybaa@gmail.com>)
 - Author:    John E. Vincent
 - Author:    Bryan W. Berry (<bryan.berry@gmail.com>)
 - Author:    Richard Clamp (@richardc)
 - Author:    Juanje Ojeda (@juanje)
 - Author:    @benattar
+- Copyright: 2013, Denis Barishev
 - Copyright: 2012, John E. Vincent
 - Copyright: 2012, Bryan W. Berry
 - Copyright: 2012, Richard Clamp

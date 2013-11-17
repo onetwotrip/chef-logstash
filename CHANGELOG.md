@@ -2,6 +2,17 @@
 
 This file is used to list changes made in each version of chef-logstash.
 
+## 0.9.0 (Nov 17, 2013)
+
+### Refactored ###
+
+* either agent or server recipe is used, but not both at the same time.
+* same code for logstash service bringing up.
+* logstash_conf definition to manage configuration files (under conf.d directory)
+* removed weird way of logstash config files generation, it's too much...
+* removed all that beaver, kibana, zmq, rabbitmq code overloading cookbook.
+* attribute values are NOT passed through variables, since it's a bad practice for reusability.
+
 ## 0.7.0:
 
 ### New features ###

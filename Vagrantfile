@@ -4,66 +4,17 @@
 log_level = :info
 
 chef_run_list = %w[
+        logstash::default
         logstash::server
-        logstash::agent
 ]
-#        curl::default
-#        minitest-handler::default
-#        logstash::server
-#        logstash::agent
-#        ark::default
-#        kibana::default
-#      ]
 
 chef_json = {
-    kibana: {
-        webserver_listen: "0.0.0.0",
-        webserver: "nginx",
-        install_type: "file"
-    },
     logstash: {
-        supervisor_gid: 'adm',
-        agent: {
-            server_ipaddress: '127.0.0.1',
-            xms: '128m',
-            xmx: '128m',
-            enable_embedded_es: false,
-            inputs: [
-              file: {
-                type: 'syslog',
-                path: ['/var/log/syslog','/var/log/messages'],
-                start_position: 'beginning'
-              }
-            ],
-            filters: [
-              { 
-                condition: 'if [type] == "syslog"',
-                block: {    
-                  grok: {
-                    match: [
-                      "message",
-                      "%{SYSLOGTIMESTAMP:timestamp} %{IPORHOST:host} (?:%{PROG:program}(?:\[%{POSINT:pid}\])?: )?%{GREEDYDATA:message}"
-                    ]
-                  },
-                  date: {
-                    match: [ 
-                      "timestamp",
-                      "MMM  d HH:mm:ss",
-                      "MMM dd HH:mm:ss",
-                      "ISO8601"
-                    ]
-                  }
-                }
-            }
-          ]
-        },
-        server: {
-            xms: '128m',
-            xmx: '128m',
-            enable_embedded_es: true,
-            config_templates: ['apache'],
-            config_templates_variables: { apache: { type: 'apache' } }
-        }
+      agent: {
+          xms: '128m',
+          xmx: '128m',
+          enable_embedded_es: true,
+      }
     }
 }
 
@@ -78,7 +29,7 @@ Vagrant.configure('2') do |config|
   end
   config.vm.provider :lxc do |lxc|
     lxc.customize 'cgroup.memory.limit_in_bytes', '1024M'
-  end  
+  end
 
   config.vm.define :precise64 do |dist_config|
     dist_config.vm.box       = 'opscode-ubuntu-12.04'
@@ -91,27 +42,26 @@ Vagrant.configure('2') do |config|
       chef.run_list = chef_run_list
       chef.json = chef_json
       chef.run_list.unshift('apt')
-      chef.json[:logstash][:server][:init_method] = 'runit'
     end
   end
 
 
   config.vm.define :lucid64 do |dist_config|
-    dist_config.vm.box       = 'lucid64'
+    dist_config.vm.box       = 'opscode-ubuntu-10.04'
     dist_config.vm.box_url   = 'https://opscode-vm-bento.s3.amazonaws.com/vagrant/opscode_ubuntu-10.04_provisionerless.box'
 
     dist_config.vm.provision :chef_solo do |chef|
       chef.cookbooks_path = ['/tmp/logstash-cookbooks']
       chef.provisioning_path = '/etc/vagrant-chef'
+      chef.roles_path = 'roles'
       chef.log_level = log_level
       chef.run_list = chef_run_list
       chef.json = chef_json
       chef.run_list.unshift('apt')
-      chef.json[:logstash][:server][:init_method] = 'runit'
     end
   end
   config.vm.define :lucid32 do |dist_config|
-    dist_config.vm.box       = 'lucid32'
+    dist_config.vm.box       = 'opscode-ubuntu-10.04-i386'
     dist_config.vm.box_url   = 'https://opscode-vm-bento.s3.amazonaws.com/vagrant/opscode_ubuntu-10.04-i386_provisionerless.box'
     dist_config.vm.provision :chef_solo do |chef|
       chef.cookbooks_path = ['/tmp/logstash-cookbooks']
@@ -120,7 +70,6 @@ Vagrant.configure('2') do |config|
       chef.run_list = chef_run_list
       chef.json = chef_json
       chef.run_list.unshift('apt')
-      chef.json[:logstash][:server][:init_method] = 'runit'
     end
   end
 
@@ -149,4 +98,3 @@ Vagrant.configure('2') do |config|
   end
 
 end
-
