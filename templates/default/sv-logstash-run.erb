@@ -5,7 +5,7 @@ ulimit -Sn 65550
 
 ##! LOGSTASH_HOME and HOME are needed for sincedb to work
 LOGSTASH_HOME="<%= node['logstash']['basedir'] %>"
-cd $LOHSTASH_HOME
+cd $LOGSTASH_HOME
 exec 2>&1
 
 GC_OPTS="<%= node['logstash']['agent']['gc_opts'] %>"
