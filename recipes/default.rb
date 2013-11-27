@@ -37,7 +37,7 @@ node['logstash']['join_groups'].each do |grp|
   end
 end
 
-%w(etc lib tmp log).each do |ldir|
+%w(etc lib tmp log data).each do |ldir|
   directory "#{logstash_base}/#{ldir}" do
     mode  0755
     owner node['logstash']['user'] and group node['logstash']['group']
