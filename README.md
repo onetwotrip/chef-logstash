@@ -37,41 +37,51 @@ Attributes
 
 ## Default
 
-* `node['logstash']['basedir']` - the base directory for all the
-  Logstash components
 * `node['logstash']['user']` - the owner for all Logstash components
 * `node['logstash']['group']` - the group for all Logstash components
-* `node['logstash']['graphite_role']` - the Chef role to search for
-  discovering your preexisting Graphite server
-* `node['logstash']['graphite_query']` - the search query used for
-  discovering your preexisting Graphite server. Defaults to
-  node['logstash']['graphite_role'] in the current node environment
-* `node['logstash']['elasticsearch_role']` - the Chef role to search
-  for discovering your preexisting ElasticSearch cluster.
-* `node['logstash']['elasticsearch_query']` - the search query used for
-  discovering your preexisting ElasticSearch cluster. Defaults to
-  node['logstash']['elasticsearch_role'] in the current node environment
-* `node['logstash']['elasticsearch_cluster']` - the cluster name
-  assigned to your preexisting ElasticSearch cluster. Only applies to
-  external ES clusters.
+
+* `node['logstash']['log_file']` - the path for Logstash agent logfile
+* `node['logstash']['basedir']` - the base directory for all the
+  Logstash components
+* `node['logstash']['pid_dir']` - the path for Logstash pid file
+* `node['logstash']['user_home']` - the path for Logstash directory '/var/lib/logstash'
+* `node['logstash']['patterns_dir']` - the pattern directory for Logstash
+* `node['logstash']['config_dir']` - the config directory for Logstash
+
+* `node['logstash']['init_method']` - the init method for Logstash `runit` or `native`
+* `node['logstash']['init_template_cookbook']` - the init template for Logstash
+
+* `node['logstash']['create_account']` - create the account info from
+  `user` and `group`; this is `true` by default. Disable it to use an existing account!
+* `node['logstash']['join_groups']` - An array of Operative System groups to join. Usefull to gain read privileges on some logfiles.
+
+* `node['logstash']['graphite_role']` - the Chef role to search for discovering your preexisting Graphite server
+* `node['logstash']['graphite_query']` - the search query used for discovering your preexisting Graphite server. Defaults to
+* `node['logstash']['elasticsearch_role']` - the Chef role to search for discovering your preexisting ElasticSearch cluster.
+* `node['logstash']['elasticsearch_query']` - the search query used for discovering your preexisting ElasticSearch cluster. Defaults to node['logstash']['elasticsearch_role'] in the current node environment
+* `node['logstash']['elasticsearch_cluster']` - the cluster name assigned to your preexisting ElasticSearch cluster. Only applies to external ES clusters.
 * `node['logstash']['elasticsearch_ip']` - the IP address that will be
   used for your elasticsearch server in case you are using Chef-solo
+* `node['logstash']['elasticsearch_port']` - the port of ES; `nil` by default
 * `node['logstash']['graphite_ip']` - the IP address that will be used
   for your graphite server in case you are using Chef-solo
-* `node['logstash']['join_groups']` - An array of Operative System
-  groups to join. Usefull to gain read privileges on some logfiles.
+* `node['logstash']['debug_stdout']` - debug mode; `false` by default
+* `node['logstash']['plugin_paths']` - the path for Logstash plugins
+* `node['logstash']['patterns']` - the patterns for Logstash
+* `node['logstash']['default_configs']` - list of configuration templates for Logstash
+
+
+## Agent
+
 * `node['logstash']['patterns']` - A hash with grok patterns to be
   used on grok and multiline filters.
-* `node['logstash']['create_account']` - create the account info from
-  `user` and `group`; this is `true` by default. Disable it to use an
-  existing account!
+
 * `node['logstash']['install_zeromq']` - Should this
   recipe install zeromq packages?
 * `node['logstash']['zeromq_packages']` - zeromq_packages to install
   if you use zeromq
 * `node['logstash']['supervisor_gid']` - set gid to run logstash as in supervisor ( runit, upstart )
 
-## Agent
 
 * `node['logstash']['agent']['install_method']` - The method to
   install logstash - either `jar` or `source`, defaults to `jar`
