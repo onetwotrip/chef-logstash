@@ -72,145 +72,33 @@ Attributes
 
 
 ## Agent
+* `node['logstash']['agent']['version']` - Logstash agent version; `1.2.2` by default
+* `node['logstash']['agent']['source_url']` - source url of Logstash
+* `node['logstash']['agent']['checksum']` - checksum of source file
 
-* `node['logstash']['patterns']` - A hash with grok patterns to be
-  used on grok and multiline filters.
+* `node['logstash']['server']['enable_embedded_es']` - Should Logstash run with the embedded ElasticSearch server or not?
 
-* `node['logstash']['install_zeromq']` - Should this
-  recipe install zeromq packages?
-* `node['logstash']['zeromq_packages']` - zeromq_packages to install
-  if you use zeromq
-* `node['logstash']['supervisor_gid']` - set gid to run logstash as in supervisor ( runit, upstart )
+* `node['logstash']['agent']['xms']` - The minimum memory to assign the JVM.
+* `node['logstash']['agent']['xmx']` - The maximum memory to assign the JVM.
+* `node['logstash']['agent']['java_opts']` - Additional params you want to pass to the JVM
+* `node['logstash']['agent']['gc_opts']` - Specify your garbage collection options to pass to the JVM
+* `node['logstash']['agent']['ipv4_only']` - Add jvm option preferIPv4Stack?
+* `node['logstash']['agent']['verbosity']` - Set agent to verbose mode, migh be `v` or `vv`; `nil` by default
 
+* `node['logstash']['agent']['server_role']` - The role of the node behaving as a Logstash `server`/`indexer`
+* `node['logstash']['agent']['server_ipaddress']` - ip address of logstash server; `nil` by default
 
-* `node['logstash']['agent']['install_method']` - The method to
-  install logstash - either `jar` or `source`, defaults to `jar`
-* `node['logstash']['agent']['version']` - The version of Logstash to
-  install. Only applies to `jar` install method.
-* `node['logstash']['agent']['source_url']` - The URL of the Logstash
-  jar to download. Only applies to `jar` install method.
-* `node['logstash']['agent']['checksum']` - The checksum of the jar
-  file. Only applies to `jar` install method.
-* `node['logstash']['agent']['base_config']` - The name of the
-  template to use for `logstash.conf` as a base config.
-* `node['logstash']['agent']['base_config_cookbook']` - Where to find
-  the base\_config template.
-* `node['logstash']['agent']['xms']` - The minimum memory to assign
-  the JVM.
-* `node['logstash']['agent']['xmx']` - The maximum memory to assign
-  the JVM.
-* `node['logstash']['agent']['java_opts']` - Additional params you
-  want to pass to the JVM
-* `node['logstash']['agent']['gc_opts']` - Specify your garbage
-  collection options to pass to the JVM
-* `node['logstash']['agent']['ipv4_only']` - Add jvm option
-  preferIPv4Stack?
-* `node['logstash']['agent']['debug']` - Run logstash with `-v`
-  option?
-* `node['logstash']['agent']['server_role']` - The role of the node
-  behaving as a Logstash `server`/`indexer`
-* `node['logstash']['agent']['inputs']` - Array of input plugins
-  configuration.
-* `node['logstash']['agent']['filters']` - Array of filter plugins
-  configuration.
-* `node['logstash']['agent']['outputs']` - Array of output plugins
-  configuration.
-* `node['logstash']['agent']['patterns_dir']` - The patterns directory
-  where pattern files will be generated. Relative to the basedir or
-  absolute.
-* `node['logstash']['agent']['home']` - home dir of logstash agent
-* `node['logstash']['agent']['config_dir']` - location of conf.d style config dir
-* `node['logstash']['agent']['config_file']` - name for base config file ( in conf.d dir )
+## Plugins
 
-
-
-## Server
-
-* `node['logstash']['server']['install_method']` - The method to
-  install logstash - either `jar` or `source`
-* `node['logstash']['server']['version']` - The version of Logstash to
-  install. Only applies to `jar` install method.
-* `node['logstash']['server']['source_url']` - The URL of the Logstash
-  jar to download. Only applies to `jar` install method.
-* `node['logstash']['server']['checksum']` - The checksum of the jar
-  file. Only applies to `jar` install method.
-* `node['logstash']['server']['base_config']` - The name of the
-  template to use for `logstash.conf` as a base config.
-* `node['logstash']['server']['base_config_cookbook']` - Where to find
-  the base\_config template.
-* `node['logstash']['server']['xms']` - The minimum memory to assign
-  the JVM.
-* `node['logstash']['server']['xmx']` - The maximum memory to assign
-  the JVM.
-* `node['logstash']['server']['java_opts']` - Additional params you
-  want to pass to the JVM
-* `node['logstash']['server']['gc_opts']` - Specify your garbage
-  collection options to pass to the JVM
-* `node['logstash']['server']['ipv4_only']` - Add jvm option
-  preferIPv4Stack?
-* `node['logstash']['server']['debug']` - Run logstash with `-v`
-  option?
-* `node['logstash']['server']['enable_embedded_es']` - Should Logstash
-  run with the embedded ElasticSearch server or not?
-* `node['logstash']['server']['install_rabbitmq']` - Should this
-  recipe install rabbitmq?
-* `node['logstash']['server']['inputs']` - Array of input plugins
-  configuration.
-* `node['logstash']['server']['filters']` - Array of filter plugins
-  configuration.
-* `node['logstash']['server']['outputs']` - Array of output plugins
-  configuration.
-* `node['logstash']['server']['patterns_dir']` - The patterns
-  directory where pattern files will be generated. Relative to the
-  basedir or absolute.
-* `node['logstash']['server']['home']` - home dir of logstash agent
-* `node['logstash']['server']['config_dir']` - location of conf.d style config dir
-* `node['logstash']['server']['config_file']` - name for base config file ( in conf.d dir )
-
-## Kibana
-
-Kibana has been removed from this cookbook. This is for several reasons:
-
-- Kibana is a fast moving target
-- It violates SRP
-- Kibana is being integrated into the logstash jar as the default UI
-- There are two solid cookbooks for using Kibana now
-  - Kibana2 (Ruby version): https://github.com/realityforge/chef-kibana
-  - Kibana3 (HTML/JS version): https://github.com/lusis/chef-kibana
-
-## Beaver (alternative to Logstash Agent)
-
-* `node['logstash']['beaver']['repo']` - URL or repository to install
-  beaver from (using pip).
-* `node['logstash']['beaver']['server_role']` - The role of the node
-  behaving as a Logstash `server`/`indexer`.
-* `node['logstash']['beaver']['server_ipaddress']` - Server IP address
-  to use (needed when not using server_role).
-* `node['logstash']['beaver']['inputs']` - Array of input plugins
-  configuration (Supported: file).
-* `node['logstash']['beaver']['outputs']` - Array of output plugins
-  configuration (Supported: amq, redis, stdout, zeromq).
-
-## Source
-
-* `node['logstash']['source']['repo']` - The git repo to use for the
-  source code of Logstash
-* `node['logstash']['source']['sha']` - The sha/branch/tag of the repo
-  you wish to clone. Uses `node['logstash']['server']['version']` by
-  default.
-* `node['logstash']['source']['java_home']` - your `JAVA_HOME`
-  location. Needed explicity for `ant` when building JRuby
+* `node['logstash']['inputs']['default'][:input]` - Specify input type, codec and port; `tcp` `json` `5959` by default.
+* `node['logstash']['filters'][:syslog]` - Specify syslog filters.
+* `node['logstash']['outputs']['default'][:output]` - Specify output type; `elasticsearch` by default.
+* `node['logstash']['outputs']['default'][:stdout]` - Specify output `stdout` type, debug and codec; `stdout` `true` `plain` by default.
 
 ## Index Cleaner
 
-* `node['logstash']['index_cleaner']['days_to_keep']` - Integer number
-  of days from today of Logstash index to keep.
-* `node['logstash']['index_cleaner']['cron']['minute']` - Minute to run
-  the index_cleaner cron job
-* `node['logstash']['index_cleaner']['cron']['hour']` - Hour to run the
-  index_cleaner cron job
-* `node['logstash']['index_cleaner']['cron']['log_file']` - Path to direct
-  the index_cleaner cron job's stdout and stderr
+* `node['logstash']['index_cleaner']['days_to_keep']` - Integer number of days from today of Logstash index to keep. `31` by default
+* `node['logstash']['index_cleaner']['cron']` - Scheduled index_cleaner cron task. Every `0` minute by default
 
 Testing
 =======
@@ -226,6 +114,7 @@ bundle install
 bundle exec berks install
 bundle exec strainer test
 ```
+
 
 Usage
 =====
