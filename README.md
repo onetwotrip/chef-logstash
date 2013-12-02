@@ -37,8 +37,8 @@ Attributes
 
 ## Default
 
-* `node['logstash']['user']` - the owner for all Logstash components
-* `node['logstash']['group']` - the group for all Logstash components
+* `node['logstash']['user']` - the owner for all Logstash components; `logstash` by default
+* `node['logstash']['group']` - the group for all Logstash components; `logstash` by default
 
 * `node['logstash']['log_file']` - the path for Logstash agent logfile
 * `node['logstash']['basedir']` - the base directory for all the
@@ -90,8 +90,8 @@ Attributes
 
 ## Plugins
 
-* `node['logstash']['inputs']['default'][:input]` - Specify input type, codec and port; `tcp` `json` `5959` by default.
-* `node['logstash']['filters'][:syslog]` - Specify syslog filters.
+* `node['logstash']['inputs']['default'][:input]` - Specify input plugin: type, codec and port; `tcp` `json` `5959` by default.
+* `node['logstash']['filters'][:syslog]` - Specify syslog filters plugin.
 * `node['logstash']['outputs']['default'][:output]` - Specify output type; `elasticsearch` by default.
 * `node['logstash']['outputs']['default'][:stdout]` - Specify output `stdout` type, debug and codec; `stdout` `true` `plain` by default.
 
@@ -119,46 +119,17 @@ bundle exec strainer test
 Usage
 =====
 
-A proper readme is forthcoming but in the interim....
+This version of cookbook containts identicaly recipes for Logstash-Server and Logstash-Agent. The difference of "agent" is only that it has no default input and output. 
 
-There are 3 recipes you need to concern yourself with:
+For Logstash-Server use recipe server`
+For Logstash-Agent use recipe `agent`
 
-* server - This would be your indexer node
-* agent - This would be a local host's agent for collection
-* kibana - This is the web interface
+Index-cleaner create python script and crontask which execute it.
 
-Every attempt (and I mean this) was made to ensure that the following
-objectives were met:
-
-* Any agent install can talk to a server install
-* Kibana web interface can talk to the server install
-* Each component works OOB and with each other
-* Utilize official opscode cookbooks where possible
-
-This setup makes HEAVY use of roles. Additionally, ALL paths have been
-made into attributes. Everything I could think of that would need to
-be customized has been made an attribute.
 
 ## Defaults
 
-By default, the recipes look for the following roles (defined as
-attributes so they can be overridden):
-
-* `graphite_server` - `node['logstash']['graphite_role']`
-* `elasticsearch_server` - `node['logstash']['elasticsearch_role']`
-* `logstash_server` -
-  `node['logstash']['kibana']['elasticsearch_role']` and
-  `node['logstash']['agent']['server_role']`
-
-The reason for giving `kibana` its own role assignment is to allow you
-to point to existing ES clusters/logstash installs.
-
-The reason for giving `agent` its own role assignment is to allow the
-`server` and `agent` recipes to work together.
-
-Yes, if you have a graphite installation with a role of
-`graphite_server`, logstash will send stats of events received to
-`logstash.events`.
+By default, recipe prepare server for using Logstash. Create base folders and get installation files.
 
 ## Agent and Server configuration
 
@@ -183,7 +154,7 @@ attributes if you choose to go the `source` route.
 Here are some basic steps
 
 * Create a role called `logstash_server` and assign it the following
-  recipes: `logstash::server` and `logstash::kibana`
+  recipes: `logstash::server`
 * Assign the role to a new server
 * Assign the `logstash::agent` recipe to another server
 
@@ -196,262 +167,58 @@ If there is NOT a system with the `logstash_server` role, the agent
 will use a null output. The default input is to read files from
 `/var/log/*.log` excluding and gzipped files.
 
-If you point your browser to the `logstash_server` system's ip
-address, you should get the kibana web interface.
 
 Do something to generate a new line in any of the files in the agent's
-watch path (I like to SSH to the host), and the events will start
-showing up in kibana. You might have to issue a fresh empty search.
-
-The `pyshipper` recipe will work as well but it is NOT wired up to
-anything yet.
+watch path (I like to SSH to the host).
 
 ## config templates
 
 If you want to use chef templates to drive your configs you'll want to set the following:
 
 * example using `agent`, `server` works the same way.
-* The actual template file for the following would resolve to `templates/default/apache.conf.erb` and be installed to `/opt/logstash/agent/etc/conf.d/apache.conf`
-* Each template has a hash named for it to inject variables in `node['logstash']['agent']['config_templates_variables']`
+* The actual template files located in `/template/default/` and be installed to `/opt/logstash/agent/etc/conf.d/` after next step
+* Each template has collect with `logstash_conf` definition which inject variables from attribute `node['logstash']['input/filter/output']
 
+### Default plugin (Example)
 
-```
-node['logstash']['agent']['config_file'] = "" # disable data drive templates ( can be left enabled if want both )
-node['logstash']['agent']['config_templates'] = ["apache"]
-node['logstash']['agent']['config_templates_cookbook'] = 'logstash'
-node['logstash']['agent']['config_templates_variables'] = { apache: { type: 'apache' } }
-```
+From version 1.2.2 logstash have conditionals in plugins. With this feature automatization of generate plugint is too difficult. So in this case we decided not to make full automatic plugin produce.
 
+You can add your own plugins from attributes, using `plugin_pp` helper which generate configuration from hash in logstash fromat, and add it into logstash configuration.
 
+Our default filter for syslog, specified in default attributes:
 
-
-## Letting data drive your templates
-
-The current templates for the agent and server are written so that you
-can provide ruby hashes in your roles that map to inputs, filters, and
-outputs. Here is a role for logstash_server.
-
-There are two formats for the hashes for filters and outputs that you should be aware of ...
-
-### Legacy
-
-This is for logstash < 1.2.0 and uses the old pattern of setting 'type' and 'tags' in the plugin to determine if it should be run.
-
-```
-filters: [
+`
+default['logstash']['filters'][:syslog] = {
   grok: {
-  type: "syslog"
-    match: [
-      "message",
-      "%{SYSLOGTIMESTAMP:timestamp} %{IPORHOST:host} (?:%{PROG:program}(?:\[%{POSINT:pid}\])?: )?%{GREEDYDATA:message}"
-    ]
+    _type: 'grok',
+    match: { "message" => "%{SYSLOGLINE}" },
+    overwrite: [ "message" ]
   },
   date: {
-  type: "syslog"
-    match: [
-      "timestamp",
-      "MMM  d HH:mm:ss",
-      "MMM dd HH:mm:ss",
-      "ISO8601"
-    ]
+    _type: 'date',
+    match: [ "timestamp", "MMM  d HH:mm:ss", "MMM dd HH:mm:ss" ]
+  },
+  mutate: {
+    _type: 'mutate',
+    remove_field: ["timestamp"]
   }
-]
-```
+}
+`
+And template, for it:
 
-### Conditional
-
-This is for logstash >= 1.2.0 and uses the new pattern of conditioansl `if 'type' == "foo" {}`
-
-Note:  the condition applies to all plugins in the block hash in the same object.
-
-```
-filters: [
-  {
-    condition: 'if [type] == "syslog"',
-    block: {
-      grok: {
-        match: [
-          "message",
-          "%{SYSLOGTIMESTAMP:timestamp} %{IPORHOST:host} (?:%{PROG:program}(?:\[%{POSINT:pid}\])?: )?%{GREEDYDATA:message}"
-        ]
-      },
-      date: {
-        match: [
-          "timestamp",
-          "MMM  d HH:mm:ss",
-          "MMM dd HH:mm:ss",
-          "ISO8601"
-        ]
-      }
-    }
+`
+<% syslog = node['logstash']['filters']['syslog'] -%>
+filter {
+  if [type] == "syslog" {
+  <% [:grok, :date, :mutate].each do |k| -%>
+    <%= logstash.plugin_pp(syslog[k], 4) %>
+  <% end -%>
   }
-]
-```
+}
+`
 
-### Examples
-
-These examples show the legacy format and need to be updated for logstash >= 1.2.0
-
-    name "logstash_server"
-    description "Attributes and run_lists specific to FAO's logstash instance"
-    default_attributes(
-      :logstash => {
-        :server => {
-          :enable_embedded_es => false,
-          :inputs => [
-            :amqp => {
-              :type => "all",
-              :host => "127.0.0.1",
-              :exchange => "rawlogs",
-              :name => "rawlogs_consumer"
-            }
-          ],
-          :filters => [
-            :grok => {
-              :type => "haproxy",
-              :pattern => "%{HAPROXYHTTP}",
-              :patterns_dir => '/opt/logstash/server/etc/patterns/'
-            }
-          ],
-          :outputs => [
-            :file => {
-              :type => 'haproxy',
-              :path => '/opt/logstash/server/haproxy_logs/%{request_header_host}.log',
-              :message_format => '%{client_ip} - - [%{accept_date}] "%{http_request}" %{http_status_code} ....'
-            }
-          ]
-        }
-      }
-    )
-    run_list(
-      "role[elasticsearch_server]",
-      "recipe[logstash::server]",
-      "recipe[php::module_curl]",
-      "recipe[logstash::kibana]"
-    )
-
-
-It will produce the following logstash.conf file
-
-    input {
-
-      amqp {
-        exchange => 'rawlogs'
-        host => '127.0.0.1'
-        name => 'rawlogs_consumer'
-        type => 'all'
-      }
-    }
-
-    filter {
-
-      grok {
-        pattern => '%{HAPROXYHTTP}'
-        patterns_dir => '/opt/logstash/server/etc/patterns/'
-        type => 'haproxy'
-      }
-    }
-
-    output {
-      stdout { debug => true debug_format => "json" }
-      elasticsearch { host => "127.0.0.1" cluster => "logstash" }
-
-      file {
-        message_format => '%{client_ip} - - [%{accept_date}] "%{http_request}" %{http_status_code} ....'
-        path => '/opt/logstash/server/haproxy_logs/%{request_header_host}.log'
-        type => 'haproxy'
-      }
-    }
-
-Here is an example using multiple filters
-
-    default_attributes(
-      :logstash => {
-        :server => {
-          :filters => [
-            { :grep => {
-                :type => 'tomcat',
-                :match => { '@message' => '([Ee]xception|Failure:|Error:)' },
-                :add_tag => 'exception',
-                :drop => false
-            } },
-            { :grep => {
-                :type => 'tomcat',
-                :match => { '@message' => 'Unloading class ' },
-                :add_tag => 'unloading-class',
-                :drop => false
-            } },
-            { :multiline => {
-                :type => 'tomcat',
-                :pattern => '^\s',
-                :what => 'previous'
-            } }
-          ]
-        }
-      }
-    )
-
-It will produce the following logstash.conf file
-
-    filter {
-
-      grep {
-        add_tag => 'exception'
-        drop => false
-        match => ['@message', '([Ee]xception|Failure:|Error:)']
-        type => 'tomcat'
-      }
-
-      grep {
-        add_tag => 'unloading-class'
-        drop => false
-        match => ["@message", "Unloading class "]
-        type => 'tomcat'
-      }
-
-      multiline {
-        patterns_dir => '/opt/logstash/patterns'
-        pattern => '^\s'
-        type => 'tomcat'
-        what => 'previous'
-      }
-
-    }
-
-## Adding grok patterns
-
-Grok pattern files can be generated using attributes as follows
-
-    default_attributes(
-      :logstash => {
-        :patterns => {
-          :apache => {
-            :HTTP_ERROR_DATE => '%{DAY} %{MONTH} %{MONTHDAY} %{TIME} %{YEAR}',
-            :APACHE_LOG_LEVEL => '[A-Za-z][A-Za-z]+',
-            :ERRORAPACHELOG => '^\[%{HTTP_ERROR_DATE:timestamp}\] \[%{APACHE_LOG_LEVEL:level}\](?: \[client %{IPORHOST:clientip}\])?',
-          },
-          :mywebapp => {
-            :MYWEBAPP_LOG => '\[mywebapp\]',
-          },
-        },
-        [...]
-      }
-    )
-
-This will generate the following files:
-
-`/opt/logstash/server/etc/patterns/apache`
-
-    APACHE_LOG_LEVEL [A-Za-z][A-Za-z]+
-    ERRORAPACHELOG ^\[%{HTTP_ERROR_DATE:timestamp}\] \[%{APACHE_LOG_LEVEL:level}\](?: \[client %{IPORHOST:clientip}\])?
-    HTTP_ERROR_DATE %{DAY} %{MONTH} %{MONTHDAY} %{TIME} %{YEAR}
-
-`/opt/logstash/server/etc/patterns/mywebapp`
-
-    MYWEBAPP_LOG \[mywebapp\]
-
-This patterns will be included by default in the grok and multiline
-filters.
+Also you can use already used plugin in other plugins. 
+For example this way to use syslog timestamp filter: `['logstash']['filters'][:syslog][:date]`
 
 
 # Vagrant
