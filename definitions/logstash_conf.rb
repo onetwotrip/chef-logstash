@@ -11,12 +11,7 @@ define :logstash_conf, :source => nil, :enable => true, :timing => :delayed do
   attrs_from_hash = lambda do |hash, attrs|
     attrs.each {|a| self.send(a) if not hash[a].nil?}
   end
-  config =  case params[:source]
-            when true
-              params[:config] || params[:name]
-            else
-              ::File.basename(params[:name])
-            end.sub(/\.erb$/,'') # strip unnecessary erb extension
+  config = params[:config] || ::File.basename(params[:name]).sub(/\.erb$/,'')
   source = params[:source] || params[:name]
   timing = params[:timing] || :none
 
