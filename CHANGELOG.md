@@ -2,6 +2,11 @@
 
 This file is used to list changes made in each version of chef-logstash.
 
+## 0.9.2 (Dec 09, 2013)
+
+* agent recipe renamed to client.
+* major rewrite of the documentation.
+
 ## 0.9.0 (Nov 17, 2013)
 
 ### Refactored ###

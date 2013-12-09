@@ -1,11 +1,7 @@
-# <a name="title"></a> chef-logstash [![Build Status](https://secure.travis-ci.org/lusis/chef-logstash.png?branch=master)](http://travis-ci.org/lusis/chef-logstash)
-
 Description
 ===========
 
 This is the Logstash cookbook.
-
-This branch is to start building towards solid support for logstash 1.2.x and the new conditionals system
 
 Attributes
 ==========
@@ -43,15 +39,17 @@ Attributes
 * `node['logstash']['debug_stdout']` - debug mode; `false` by default
 * `node['logstash']['plugin_paths']` - the path for Logstash plugins
 * `node['logstash']['patterns']` - the patterns for Logstash
-* `node['logstash']['default_configs']` - list of configuration templates for Logstash
+* `node['logstash']['default_configs']` - list of Logstash configuration files enabled by default.
+* `node['logstash']['version']` - Logstash version; `1.2.2` by default
+* `node['logstash']['source_url']` - source url of Logstash
+* `node['logstash']['checksum']` - checksum of source file
 
 
-## Agent
-* `node['logstash']['agent']['version']` - Logstash agent version; `1.2.2` by default
-* `node['logstash']['agent']['source_url']` - source url of Logstash
-* `node['logstash']['agent']['checksum']` - checksum of source file
+## Logstash service configuration
 
-* `node['logstash']['server']['enable_embedded_es']` - Should Logstash run with the embedded ElasticSearch server or not?
+These attributes configure logstash **service** they have nothing in common with the _<u>client</u>_ installation way. Logstash jar contains *agent* and *web* options to run specific logstash service inside the jar. We also stick to this term.
+
+* `node['logstash']['agent']['enable_embedded_es']` - Should Logstash run with the embedded ElasticSearch server or not?
 
 * `node['logstash']['agent']['xms']` - The minimum memory to assign the JVM.
 * `node['logstash']['agent']['xmx']` - The maximum memory to assign the JVM.
@@ -60,15 +58,12 @@ Attributes
 * `node['logstash']['agent']['ipv4_only']` - Add jvm option preferIPv4Stack?
 * `node['logstash']['agent']['verbosity']` - Set agent to verbose mode, migh be `v` or `vv`; `nil` by default
 
-* `node['logstash']['agent']['server_role']` - The role of the node behaving as a Logstash `server`/`indexer`
-* `node['logstash']['agent']['server_ipaddress']` - ip address of logstash server; `nil` by default
 
-## Plugins
+## Logstash default inputs, filters, outputs configuration
 
-* `node['logstash']['inputs']['default'][:input]` - Specify input plugin: type, codec and port; `tcp` `json` `5959` by default.
-* `node['logstash']['filters'][:syslog]` - Specify syslog filters plugin.
-* `node['logstash']['outputs']['default'][:output]` - Specify output type; `elasticsearch` by default.
-* `node['logstash']['outputs']['default'][:stdout]` - Specify output `stdout` type, debug and codec; `stdout` `true` `plain` by default.
+* `node['logstash']['inputs']['default']` - default inputs configuration. Logstash is configured to listen **tcp** on port 5959.
+* `node['logstash']['filters'][:syslog]` - Syslog filters.
+* `node['logstash']['outputs']['default'] - default outputs configuration Logstash is configured to output to the elasticsearch (in server recipe).
 
 ## Index Cleaner
 
@@ -88,37 +83,34 @@ bundle exec strainer test
 Usage
 ==========
 
-Cookbook install logstash into the system.
-You can use recipe `logstash:server` or recipe `logstash:agent` for appropriate role.
-You should not use `logstash:server` and `logstash:agent` on the one node.
-The difference of `agent` is only that it has no default input and output plugins. 
+Cookbook installs **logstash** into the system and configures the service. Basically there are two recipes which install Logstash they are `logstash::server` and `logstash::client`. Both install logstash jar-package into the system and setup the Logstash agent service. They run exactly the same install and setup code, the only difference is that that **client** recipe disables attributes which generate default input and default elasticsearch output.
 
 Index-cleaner recipe create python script and crontask which execute it.
 
 Configuration
 ==========
 
-## Agent and Server configuration
+## Logstash configuration
 
-First of all cookbook create runit conf file from template. 
-After that cookbook create pluging files using .erb templates.
-List of template files get from `node['logstash']['default_configs']` attribute.
-All plugin configuration files locate in `node['logstash']['config_dir']`
-For the correct order we use number at the beginning of the templates file names.
-Logstash:server recipe create input, filter and output files.
-Logstasg:agent recipe create only filter file.
+The set of default configuration files is defined in `node['logstash']['default_configs']` attribute. These files are *10-input.conf.erb, 40-filter.conf.erb, 80-output.conf.erb* and they are populated into `node['logstash']['config_dir']` directory.
+
+On the node provisioned with `logstash::client` input and output configuration files will be empty. However both **client** and **server** ship with **Syslog** filtering by default.
+
 
 ## Using logstash_conf
 
-From version 1.2.2 logstash have conditionals in plugins. With this feature automatization of generate plugint is too difficult. So in this case we decided not to make full automatic plugin produce.
-You can add your own plugins from attributes, using `plugin_pp` helper which generate configuration from hash in logstash fromat, and add it into logstash configuration.
-Logstash_conf is wrapper for template and cookbook files. Each template has collect with `logstash_conf` definition which inject variables from attribute `node['logstash']['input/filter/output']`
+Logstash configuration files can be generated with the help of **logstash_conf** definition. The upstream cookbook [lusis/chef-logstash](https://github.com/lusis/chef-logstash/tree/0.7.0) writes all the configs automatically based on the configuration given in the attributes. We don't do that way!
+
+Staring from the version 1.2 Logstash configuration language uses conditionals. So far it's the best way to generate configs  is not clear. This cookbook uses **logstash_conf** definition and a small template helper `logstash.plugin_pp(data, spacing=2)` for simplifying configs generation.
+
+**plugin_pp** can output plugin configuration data in the Logstash format. Given approach allows you to create configuration "library" by storing needed plugins in the node attributes. Later just output these data in the template using `logstash.plugin_pp` method.
 
 
-## Default plugin (Example)
+## Syslog filters configuration example
 
-Our default filter for syslog, specified in default attributes:
+Our cookbook provides syslog filtering out of box, let's have a look at it.
 
+The following attributes setup basic logstash syslog filterring.
 ```
 default['logstash']['filters'][:syslog] = {
   grok: {
@@ -136,7 +128,8 @@ default['logstash']['filters'][:syslog] = {
   }
 }
 ```
-And template, for it:
+
+Inside the template we use `logstash.plugin_pp` method to output the plugin data. The code bellow shows that plugin_pp might useful to create conditional layout.
 
 ```
 <% syslog = node['logstash']['filters']['syslog'] -%>
@@ -149,8 +142,7 @@ filter {
 }
 ```
 
-Also you can use already used plugin in other plugins. 
-For example this way to use syslog timestamp filter: `['logstash']['filters'][:syslog][:date]`
+In the end you've got predefined filters in the node attributes, so if your custom application log format requires syslog date filter it's easy to use it again with **plugin_pp**. Talking about real life scenarios I don't know if the library approach along with **plugin_pp** is a good way to do.
 
 
 # Vagrant
