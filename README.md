@@ -62,8 +62,8 @@ These attributes configure logstash **service** they have nothing in common with
 ## Logstash default inputs, filters, outputs configuration
 
 * `node['logstash']['inputs']['default']` - default inputs configuration. Logstash is configured to listen **tcp** on port 5959.
-* `node['logstash']['filters'][:syslog]` - Syslog filters.
-* `node['logstash']['outputs']['default'] - default outputs configuration Logstash is configured to output to the elasticsearch (in server recipe).
+* `node['logstash']['filters'][:syslog]` - configuration of Syslog filters.
+* `node['logstash']['outputs']['default']` - default outputs configuration Logstash is configured to output to the elasticsearch (in server recipe).
 
 ## Index Cleaner
 
@@ -85,7 +85,6 @@ Usage
 
 Cookbook installs **logstash** into the system and configures the service. Basically there are two recipes which install Logstash they are `logstash::server` and `logstash::client`. Both install logstash jar-package into the system and setup the Logstash agent service. They run exactly the same install and setup code, the only difference is that that **client** recipe disables attributes which generate default input and default elasticsearch output.
 
-Index-cleaner recipe create python script and crontask which execute it.
 
 Configuration
 ==========
