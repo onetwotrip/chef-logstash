@@ -29,3 +29,8 @@ default['logstash']['debug_stdout'] = false
 default['logstash']['plugin_paths'] = []
 default['logstash']['patterns'] = {}
 default['logstash']['default_configs'] = %w(10-input.conf.erb 40-filter.conf.erb 80-output.conf.erb)
+
+# logstash version and source url
+default['logstash']['version']    = '1.2.2'
+default['logstash']['source_url'] = 'https://download.elasticsearch.org/logstash/logstash/logstash-1.2.2-flatjar.jar'
+default['logstash']['checksum'] = '6b0974eed6814f479b68259b690e8c27ecbca2817b708c8ef2a11ce082b1183c'

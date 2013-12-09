@@ -59,12 +59,12 @@ remote_file "#{logstash_base}/lib/logstash-#{node['logstash']['agent']['version'
   action :create_if_missing
   mode  0755
   owner 'root' and group 'root'
-  source node['logstash']['agent']['source_url']
-  checksum node['logstash']['agent']['checksum']
+  source node['logstash']['source_url']
+  checksum node['logstash']['checksum']
 end
 
 link "#{logstash_base}/lib/logstash.jar" do
-  to "#{logstash_base}/lib/logstash-#{node['logstash']['agent']['version']}.jar"
+  to "#{logstash_base}/lib/logstash-#{node['logstash']['version']}.jar"
   notifies :restart, 'service[logstash]'
 end
 
