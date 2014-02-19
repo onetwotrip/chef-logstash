@@ -55,7 +55,7 @@ end
   end
 end
 
-remote_file "#{logstash_base}/lib/logstash-#{node['logstash']['agent']['version']}.jar" do
+remote_file "#{logstash_base}/lib/logstash-#{node['logstash']['version']}.jar" do
   action :create_if_missing
   mode  0755
   owner 'root' and group 'root'
